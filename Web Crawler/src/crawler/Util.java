@@ -6,9 +6,25 @@
 package crawler;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import static java.nio.file.StandardCopyOption.*;
+
+import javax.print.DocFlavor.INPUT_STREAM;
+import java.util.regex.Matcher;
 
 /**
  *
@@ -36,4 +52,32 @@ public class Util {
         fis.close();
         bis.close();
     }
+
+    public static String getPage(String url, int id){
+        URL pagina;
+        InputStream is = null;
+        BufferedReader br;
+        String line;
+        StringBuilder total = new StringBuilder();
+        try {
+            pagina = new URL(url);
+            is = pagina.openStream();
+            br = new BufferedReader(new InputStreamReader(is));
+            while ((line = br.readLine()) != null){
+                total.append(line);
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (IOException ioe){
+            ioe.printStackTrace();
+        }finally {
+            try{
+                if (is != null) {
+                    is.close();
+                }
+            } catch(IOException ioe){}
+        }
+        return total.toString();
+    }
+
 }

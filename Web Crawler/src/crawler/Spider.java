@@ -24,7 +24,18 @@ public class Spider {
     private Set<String> pagesVisited = new HashSet<String>();
     private List<String> pagesToVisit = new LinkedList<String>();
     
-   private void search(String url){
+ 
+
+    private void search(String url){
        
-   }
+    }
+
+    
+    private static void scanPage(String url){
+        String pagina = Util.getPage(url, 0);
+        System.out.print(pagina);
+    }
+
+
+
 }
