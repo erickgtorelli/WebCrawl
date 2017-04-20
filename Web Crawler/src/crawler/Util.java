@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import static java.nio.file.StandardCopyOption.*;
+import java.util.ArrayList;
 
 import javax.print.DocFlavor.INPUT_STREAM;
 import java.util.regex.Matcher;
@@ -84,6 +85,27 @@ public class Util {
         return total.toString();
     }
 
-    
+    /*
+    Recibe el texto de la pagina en string y el url base para llegarle a las direcciones locales
+    */
+    public static ArrayList<String> extractUrls(String pageText, String baseUrl){
+        ArrayList<String> urls = new ArrayList<String>();
+        System.out.print(pageText);
+        Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
+        Matcher buscador = filePattern.matcher(pageText);
+        while(buscador.find()){
+            if(buscador.group(3) == null){
+                urls.add(baseUrl + buscador.group(2));
+            }
+            else if (buscador.group(3).equals("//")){
+                urls.add("http://"+buscador.group(5));
+            }
+            else {
+                urls.add(buscador.group(2));
+            }
+        }
+        return urls;
+    }
+
 
 }
