@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
  * @author egtor
  */
 public class Util {
+    private int fileCount = 0;
     /**
      * Download file from URL 
      * @param urlStr
@@ -40,7 +41,8 @@ public class Util {
      */
     public void downloadfile(String urlStr, String file, String type) throws IOException{
         URL url = new URL(urlStr);
-        String filename = file + "." + type;
+        String filename =  fileCount + "." + type;
+        fileCount++;
         BufferedInputStream bis = new BufferedInputStream(url.openStream());
         FileOutputStream fis = new FileOutputStream(filename);
         byte[] buffer = new byte[1024];
@@ -52,6 +54,8 @@ public class Util {
         fis.close();
         bis.close();
     }
+    
+    
 
     public String getPage(String url){
         URL pagina;
