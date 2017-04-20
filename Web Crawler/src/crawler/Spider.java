@@ -20,19 +20,37 @@ import java.util.Set;
  */
 public class Spider {
     // Fields
-    private static final int MAX_PAGES_TO_SEARCH = 10;
+    private int MAX_PAGES_TO_SEARCH;
+    private int BUFFER_DOCUMENTS_SIZE;
     private Set<String> pagesVisited = new HashSet<String>();
     private List<String> pagesToVisit = new LinkedList<String>();
-    
- 
+    private List<String> pagesToDownload = new LinkedList<String>();
+    private List<String> pagesToDownloadType = new LinkedList<String>();
+    private List<String> URLsToDownload = new LinkedList<String>();
+    private Util SpiderLeg = new Util();
 
-    private void search(String url){
-       
+    private void search(){
+     while(this.pagesVisited.size() < MAX_PAGES_TO_SEARCH && !this.pagesToVisit.isEmpty())
+      {
+          String currentUrl;
+          currentUrl = this.pagesToVisit.remove(0);         
+          pagesToDownload.add(SpiderLeg.getPage(currentUrl, MAX_PAGES_TO_SEARCH));
+          
+               
+          System.out.println(String.format("**Success** file downloaded %s", currentUrl));
+          this.pagesVisited.add(currentUrl);
+         // this.pagesToVisit.addAll(//get links));
+      }
+     
+      System.out.println("\n**Done** Visited " + this.pagesVisited.size() + " web page(s)");
+  
+  
     }
 
     
-    private static void scanPage(String url){
-        String pagina = Util.getPage(url, 0);
+    private void scanPage(String url){
+        String pagina;
+        pagina = Util.getPage(url);
         System.out.print(pagina);
     }
 

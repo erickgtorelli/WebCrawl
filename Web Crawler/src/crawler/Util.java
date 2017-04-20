@@ -53,7 +53,7 @@ public class Util {
         bis.close();
     }
 
-    public static String getPage(String url, int id){
+    public String getPage(String url){
         URL pagina;
         InputStream is = null;
         BufferedReader br;
@@ -79,5 +79,7 @@ public class Util {
         }
         return total.toString();
     }
+
+    
 
 }
