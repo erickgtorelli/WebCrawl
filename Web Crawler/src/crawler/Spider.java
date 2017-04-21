@@ -71,8 +71,20 @@ public class Spider {
          //Extract the urls from the pag and added to the pageToVisit List 
          ArrayList<String> arrayList = SpiderLeg.extractUrls(currentPage, currentUrl);
          
-         if(!arrayList.isEmpty())
-         this.pagesToVisit.addAll(arrayList);
+         if(!arrayList.isEmpty()){}
+         for (String url : arrayList) {
+             // if already visited
+             if (pagesVisited.contains(url)) {
+                 continue;
+             }
+             // if banned by robots.txt
+             if (!this.SpiderLeg.crawlable(url)){
+                 continue;
+             }
+             else {
+                 this.pagesToVisit.add(url);
+             }    
+         }
          TimeUnit.SECONDS.sleep(1); 
       }
        

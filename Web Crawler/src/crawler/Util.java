@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -23,6 +25,9 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import static java.nio.file.StandardCopyOption.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.print.DocFlavor.INPUT_STREAM;
 import java.util.regex.Matcher;
@@ -33,6 +38,8 @@ import java.util.regex.Matcher;
  */
 public class Util {
     private int fileCount = 0;
+    private HashMap<String, ArrayList<String>> rules = new HashMap<String, ArrayList<String>>();
+
     /**
      * Download file from URL 
      * @param urlStr
@@ -97,20 +104,61 @@ public class Util {
         ArrayList<String> urls = new ArrayList<String>();
         System.out.print(pageText);
         Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
-        Matcher buscador = filePattern.matcher(pageText);
-        while(buscador.find()){
-            if(buscador.group(3) == null){
-                urls.add(baseUrl + buscador.group(2));
+        Matcher matcher = filePattern.matcher(pageText);
+        String match = null;
+        while(matcher.find()){
+            if(matcher.group(3) == null){
+                match = baseUrl + matcher.group(2);
             }
-            else if (buscador.group(3).equals("//")){
-                urls.add("http://"+buscador.group(5));
+            else if (matcher.group(3).equals("//")){
+                match = "http://"+matcher.group(5);
             }
             else {
-                urls.add(buscador.group(2));
+                match = matcher.group(2);
             }
+            urls.add(match);
         }
+        
         return urls;
     }
-
+    
+    
+    public void getRules(String url) throws MalformedURLException{
+        URL full = new URL(url);
+        URL host;
+        InputStream is = null;
+        BufferedReader br;
+        String line;
+        try {
+            host = new URL(full + "/robots.txt");
+            is = host.openStream();
+            br = new BufferedReader(new InputStreamReader(is));
+            while ((line = br.readLine()) != null){
+                
+                
+                
+                
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (IOException ioe){
+            ioe.printStackTrace();
+        }finally {
+            try{
+                if (is != null) {
+                    is.close();
+                }
+            } catch(IOException ioe){}
+        }        
+    }
+    
+    
+    public boolean crawlable(String url){        
+        
+        return true;
+    }
+    
+    
+    
 
 }
