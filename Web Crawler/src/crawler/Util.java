@@ -40,10 +40,11 @@ public class Util {
      * @param type content type of the file 
      * @throws IOException 
      */
-    public void downloadfile(String urlStr, String file, String type) throws IOException{
+    public int downloadfile(String urlStr, String file, String type) throws IOException{
         URL url = new URL(urlStr);
-        String filename =  fileCount + "." + type;
+        String filename = "\\Files\\" + fileCount + "." + type;
         fileCount++;
+        int bytesCount = 0;
         BufferedInputStream bis = new BufferedInputStream(url.openStream());
         FileOutputStream fis = new FileOutputStream(filename);
         byte[] buffer = new byte[1024];
@@ -51,9 +52,13 @@ public class Util {
         while((count = bis.read(buffer,0,1024)) != -1)
         {
             fis.write(buffer, 0, count);
+            bytesCount += 1024;
         }
+        //* save URL on url.txt history
         fis.close();
         bis.close();
+        
+        return bytesCount;
     }
     
     
@@ -88,7 +93,7 @@ public class Util {
     /*
     Recibe el texto de la pagina en string y el url base para llegarle a las direcciones locales
     */
-    public static ArrayList<String> extractUrls(String pageText, String baseUrl){
+    public ArrayList<String> extractUrls(String pageText, String baseUrl){
         ArrayList<String> urls = new ArrayList<String>();
         System.out.print(pageText);
         Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
