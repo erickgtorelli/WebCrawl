@@ -8,6 +8,7 @@ package crawler;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,14 +39,15 @@ public class Spider {
     private List<String> URLsToDownload = new LinkedList<String>();
     private Util SpiderLeg = new Util();
 
+    
     Spider(int MAX_LEVEL_TO_EXPLORE, int MAX_SIZE_TO_DOWNLOAD, int MAX_NUM_DOCUMENTS, int SIZE_BUFFER_OF_DOCUMENTS) {
         this.MAX_LEVEL_TO_EXPLORE = MAX_LEVEL_TO_EXPLORE;
         this.MAX_SIZE_TO_DOWNLOAD = MAX_SIZE_TO_DOWNLOAD * 1000;
         this.MAX_NUM_DOCUMENTS = MAX_NUM_DOCUMENTS;
         this.SIZE_BUFFER_OF_DOCUMENTS = SIZE_BUFFER_OF_DOCUMENTS;
     }
-
-    public void search() throws InterruptedException{
+    
+    public void search() throws InterruptedException, MalformedURLException{
         String currentUrl;
         String currentPage;
      while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS + SIZE_BUFFER_OF_DOCUMENTS) && 

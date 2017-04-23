@@ -37,17 +37,20 @@ import java.util.regex.Matcher;
  * @author egtor
  */
 public class Util {
+
     private int fileCount = 0;
-    private HashMap<String, ArrayList<String>> rules = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, ArrayList<String>> disallowed = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, ArrayList<String>> allowed = new HashMap<String, ArrayList<String>>();
 
     /**
-     * Download file from URL 
+     * Download file from URL
+     *
      * @param urlStr
      * @param file name to save the file
-     * @param type content type of the file 
-     * @throws IOException 
+     * @param type content type of the file
+     * @throws IOException
      */
-    public int downloadfile(String urlStr, String file, String type) throws IOException{
+    public int downloadfile(String urlStr, String file, String type) throws IOException {
         URL url = new URL(urlStr);
         String filename = "\\Files\\" + fileCount + "." + type;
         fileCount++;
@@ -55,22 +58,19 @@ public class Util {
         BufferedInputStream bis = new BufferedInputStream(url.openStream());
         FileOutputStream fis = new FileOutputStream(filename);
         byte[] buffer = new byte[1024];
-        int count=0;
-        while((count = bis.read(buffer,0,1024)) != -1)
-        {
+        int count = 0;
+        while ((count = bis.read(buffer, 0, 1024)) != -1) {
             fis.write(buffer, 0, count);
             bytesCount += 1024;
         }
         //* save URL on url.txt history
         fis.close();
         bis.close();
-        
+
         return bytesCount;
     }
-    
-    
 
-    public String getPage(String url){
+    public String getPage(String url) {
         URL pagina;
         InputStream is = null;
         BufferedReader br;
@@ -80,85 +80,147 @@ public class Util {
             pagina = new URL(url);
             is = pagina.openStream();
             br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null){
+            while ((line = br.readLine()) != null) {
                 total.append(line);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-        }catch (IOException ioe){
+        } catch (IOException ioe) {
             ioe.printStackTrace();
-        }finally {
-            try{
+        } finally {
+            try {
                 if (is != null) {
                     is.close();
                 }
-            } catch(IOException ioe){}
+            } catch (IOException ioe) {
+            }
         }
         return total.toString();
     }
 
     /*
     Recibe el texto de la pagina en string y el url base para llegarle a las direcciones locales
-    */
-    public ArrayList<String> extractUrls(String pageText, String baseUrl){
+     */
+    public ArrayList<String> extractUrls(String pageText, String baseUrl) {
         ArrayList<String> urls = new ArrayList<String>();
-        System.out.print(pageText);
         Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
         Matcher matcher = filePattern.matcher(pageText);
         String match = null;
-        while(matcher.find()){
-            if(matcher.group(3) == null){
+        while (matcher.find()) {
+            if (matcher.group(3) == null) {
                 match = baseUrl + matcher.group(2);
-            }
-            else if (matcher.group(3).equals("//")){
-                match = "http://"+matcher.group(5);
-            }
-            else {
+            } else if (matcher.group(3).equals("//")) {
+                match = "http://" + matcher.group(5);
+            } else {
                 match = matcher.group(2);
             }
             urls.add(match);
         }
-        
+
         return urls;
     }
+
     
-    
-    public void getRules(String url) throws MalformedURLException{
-        URL full = new URL(url);
+    /*
+    Revisa el robots.txt de la raiz de un url y agrega sus reglas a dos listas, allowed y disallowed
+    Ambas listas se consultan con el url raiz 
+    */
+    public void addRules(String url){
         URL host;
         InputStream is = null;
         BufferedReader br;
         String line;
+        boolean userAgent = false;
+        ArrayList<String> allowed = new ArrayList<String>();
+        ArrayList<String> disallowed = new ArrayList<String>();
         try {
+            URL full = new URL(url);
             host = new URL(full + "/robots.txt");
             is = host.openStream();
             br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null){
-                
-                
-                
-                
+            String path = null;
+            while ((line = br.readLine()) != null) {
+                if (line.indexOf("User-agent: *") != -1) {
+                    userAgent = true;
+                } else if (line.indexOf("User-agent:") != -1) {
+                    userAgent = false;
+                }
+                if (userAgent) {
+                    if (line.indexOf("Disallow: ") != -1) {
+                        path = line.substring(10);
+                        disallowed.add(path);
+
+                    } else if (line.indexOf("Allow: ") != -1) {
+                        path = line.substring(7);
+                        allowed.add(path);
+                    }
+                }
             }
+            this.allowed.put(url, allowed);
+            this.disallowed.put(url, disallowed);
         } catch (MalformedURLException ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-        }catch (IOException ioe){
+        } catch (IOException ioe) {
             ioe.printStackTrace();
-        }finally {
-            try{
+        } finally {
+            try {
                 if (is != null) {
                     is.close();
                 }
-            } catch(IOException ioe){}
-        }        
+            } catch (IOException ioe) {
+            }
+        }
+    }
+
+    public ArrayList<String> getAllowed(String host){
+        return this.allowed.get(host);
+    }
+    
+     public ArrayList<String> getDisallowed(String host){
+        return this.disallowed.get(host);
     }
     
     
-    public boolean crawlable(String url){        
-        
-        return true;
+    
+    public boolean crawlable(String url) throws MalformedURLException {
+        URL host = new URL(url);
+        String hostUrl = host.getProtocol() + "://" + host.getHost();
+        boolean crawlable = false;
+        ArrayList<String> disallowed = this.disallowed.get(hostUrl);
+        /// Si no hay reglas de disallowed, podemos pasar
+        if (disallowed == null){
+            crawlable = true;
+        }
+        else{
+            //Igual si hay un set vacio de reglas
+            if (disallowed.isEmpty()){
+                crawlable = true;
+            }
+            else{
+                //Revisamos disallow para ver si nos incluye
+                for (int i = 0; i < disallowed.size(); i++){
+                    if(url.startsWith(hostUrl + disallowed.get(i))){
+                        crawlable = false;
+                        break;
+                    }
+                }
+                ArrayList<String> allowed = this.allowed.get(hostUrl);
+                //Revisamos allowed a ver si nos incluye
+                if (allowed != null){
+                    for (int i = 0; i < allowed.size(); i++){
+                        if(url.startsWith(hostUrl + allowed.get(i))){
+                            crawlable = true;
+                            break;
+                        }
+                    }
+                }
+                //Si existen reglas, pero no nos incluyen, estamos bien
+                else{
+                    crawlable = true;
+                }
+            }
+        }
+        return crawlable;
     }
-    
-    
-    
 
 }
