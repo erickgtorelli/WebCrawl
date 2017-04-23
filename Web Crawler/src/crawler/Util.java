@@ -129,13 +129,18 @@ public class Util {
         URL host;
         InputStream is = null;
         BufferedReader br;
-        String line;
+        String line, hostString;
         boolean userAgent = false;
         ArrayList<String> allowed = new ArrayList<String>();
         ArrayList<String> disallowed = new ArrayList<String>();
         try {
             URL full = new URL(url);
-            host = new URL(full + "/robots.txt");
+            hostString = full.getProtocol() + "://" + full.getHost();
+            //Revisa si ya hay un ruleset
+            if (this.disallowed.containsKey(hostString)){
+                return;
+            }
+            host = new URL(hostString + "/robots.txt");
             is = host.openStream();
             br = new BufferedReader(new InputStreamReader(is));
             String path = null;
@@ -156,8 +161,9 @@ public class Util {
                     }
                 }
             }
-            this.allowed.put(url, allowed);
-            this.disallowed.put(url, disallowed);
+            this.allowed.put(hostString, allowed);
+            this.disallowed.put(hostString, disallowed);
+            System.out.print(hostString);
         } catch (MalformedURLException ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ioe) {
@@ -172,12 +178,14 @@ public class Util {
         }
     }
 
-    public ArrayList<String> getAllowed(String host){
-        return this.allowed.get(host);
+    public ArrayList<String> getAllowed(String host) throws MalformedURLException{
+        URL url = new URL(host);
+        return this.allowed.get(url.getProtocol() + "://" + url.getHost());
     }
     
-     public ArrayList<String> getDisallowed(String host){
-        return this.disallowed.get(host);
+     public ArrayList<String> getDisallowed(String host) throws MalformedURLException{
+         URL url = new URL(host);
+        return this.disallowed.get(url.getProtocol() + "://" + url.getHost());
     }
     
     

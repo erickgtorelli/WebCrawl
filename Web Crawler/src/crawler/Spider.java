@@ -38,7 +38,6 @@ public class Spider {
     private List<String> pagesToDownloadType = new LinkedList<String>();
     private List<String> URLsToDownload = new LinkedList<String>();
     private Util SpiderLeg = new Util();
-
     
     Spider(int MAX_LEVEL_TO_EXPLORE, int MAX_SIZE_TO_DOWNLOAD, int MAX_NUM_DOCUMENTS, int SIZE_BUFFER_OF_DOCUMENTS) {
         this.MAX_LEVEL_TO_EXPLORE = MAX_LEVEL_TO_EXPLORE;
@@ -56,6 +55,8 @@ public class Spider {
       {
           //Visitar la pag y guardar sus datos
           currentUrl = this.pagesToVisit.remove(0); 
+          //Agregar reglas asociadas a la página
+          this.SpiderLeg.addRules(currentUrl);
           currentPage = this.SpiderLeg.getPage(currentUrl);
           pagesToDownload.add(currentPage);
           URLsToDownload.add(currentUrl);
