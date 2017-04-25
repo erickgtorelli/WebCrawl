@@ -6,7 +6,9 @@
 package crawler;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,7 +51,7 @@ public class Spider {
     public void search() throws InterruptedException, MalformedURLException{
         String currentUrl;
         String currentPage;
-     while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS + SIZE_BUFFER_OF_DOCUMENTS) && 
+     while((this.pagesVisited.size() > MAX_NUM_DOCUMENTS + SIZE_BUFFER_OF_DOCUMENTS) && 
              (!this.pagesToVisit.isEmpty()) && 
              (MBDownloaded < MAX_SIZE_TO_DOWNLOAD))
       {
@@ -113,7 +115,28 @@ public class Spider {
     }
 
     public void loadFile(String filepath){
-        //Load all the URLs from the file
-    }
+        BufferedReader br = null;
+	FileReader fr = null;
+        System.out.println("Loading..." + filepath);
+		try
+                {
+                  BufferedReader reader = new BufferedReader(new FileReader(filepath));
+                  String line;
+                  while ((line = reader.readLine()) != null)
+                  {
+                    pagesToVisit.add(line);
+                  }
+                  reader.close();
 
-}
+                }
+                catch (Exception e)
+                {
+                  System.err.format("Exception occurred trying to read '%s'.", filepath);
+                  e.printStackTrace();
+                }
+
+	}
+        //Load all the URLs from the file
+  }
+
+
