@@ -51,7 +51,12 @@ public class Spider {
     public void search() throws InterruptedException, MalformedURLException{
         String currentUrl;
         String currentPage;
-     while((this.pagesVisited.size() > MAX_NUM_DOCUMENTS + SIZE_BUFFER_OF_DOCUMENTS) && 
+        System.out.println("Pages visited Size: " + this.pagesVisited.size());
+        System.out.println("Pages to visit not empty: " + !this.pagesToVisit.isEmpty());
+        System.out.println("MBDownloaded: " + MBDownloaded);
+        System.out.println("MAX_NUM_DOCUMENTS: " + MAX_NUM_DOCUMENTS);
+        System.out.println("MAX_SIZE_TO_DOWNLOAD: " + MAX_SIZE_TO_DOWNLOAD);
+     while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS) && 
              (!this.pagesToVisit.isEmpty()) && 
              (MBDownloaded < MAX_SIZE_TO_DOWNLOAD))
       {
