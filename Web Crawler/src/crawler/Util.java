@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,9 +51,13 @@ public class Util {
      * @param type content type of the file
      * @throws IOException
      */
-    public int downloadfile(String urlStr, String file, String type) throws IOException {
-        URL url = new URL(urlStr);
-        String filename = "\\Files\\" + fileCount + "." + type;
+    public int downloadfile(String fileUrl, Pair<String, String> pair) throws IOException {
+        URL url = new URL(fileUrl);
+        System.out.println("Downloading - " + fileUrl);
+        String filename = "\\Files\\" + fileCount + pair.t;
+        File file;
+        file = new File(filename);
+        file.createNewFile();
         fileCount++;
         int bytesCount = 0;
         BufferedInputStream bis = new BufferedInputStream(url.openStream());
@@ -101,20 +106,27 @@ public class Util {
     /*
     Recibe el texto de la pagina en string y el url base para llegarle a las direcciones locales
      */
-    public ArrayList<String> extractUrls(String pageText, String baseUrl) {
-        ArrayList<String> urls = new ArrayList<String>();
+    public ArrayList<Pair<String, String>> extractUrls(String pageText, String baseUrl) {
+        ArrayList<Pair<String, String>> urls = new ArrayList<Pair<String, String>>();
         Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
         Matcher matcher = filePattern.matcher(pageText);
-        String match = null;
+        String matchUrl = null;
+        String matchType = null;
         while (matcher.find()) {
             if (matcher.group(3) == null) {
-                match = baseUrl + matcher.group(2);
+                matchUrl = baseUrl + matcher.group(2);
             } else if (matcher.group(3).equals("//")) {
-                match = "http://" + matcher.group(5);
+                matchUrl = "http://" + matcher.group(5);
             } else {
-                match = matcher.group(2);
+                matchUrl = matcher.group(2);
             }
-            urls.add(match);
+            if(matcher.group(6) == null){
+                matchType = ".html";
+            }
+            else {
+                matchType = matcher.group(6);
+            }
+            urls.add(new Pair<String, String>(matchUrl, matchType));
         }
 
         return urls;
@@ -163,11 +175,10 @@ public class Util {
             }
             this.allowed.put(hostString, allowed);
             this.disallowed.put(hostString, disallowed);
-            System.out.print(hostString);
         } catch (MalformedURLException ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+           // ioe.printStackTrace();           
         } finally {
             try {
                 if (is != null) {
@@ -193,7 +204,7 @@ public class Util {
     public boolean crawlable(String url) throws MalformedURLException {
         URL host = new URL(url);
         String hostUrl = host.getProtocol() + "://" + host.getHost();
-        boolean crawlable = false;
+        boolean crawlable = true;
         ArrayList<String> disallowed = this.disallowed.get(hostUrl);
         /// Si no hay reglas de disallowed, podemos pasar
         if (disallowed == null){
@@ -221,10 +232,6 @@ public class Util {
                             break;
                         }
                     }
-                }
-                //Si existen reglas, pero no nos incluyen, estamos bien
-                else{
-                    crawlable = true;
                 }
             }
         }

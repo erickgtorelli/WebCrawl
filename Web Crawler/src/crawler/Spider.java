@@ -35,11 +35,12 @@ public class Spider {
     private int MBDownloaded = 0;
     private int numOfDocuments = 0;
     private Set<String> pagesVisited = new HashSet<String>();
-    private List<String> pagesToVisit = new LinkedList<String>();
-    private List<String> pagesToDownload = new LinkedList<String>();
-    private List<String> pagesToDownloadType = new LinkedList<String>();
+    private List<Pair<String, String>> pagesToVisit = new LinkedList<Pair<String, String>>();
+    private List<Pair<String, String>> pagesToDownload = new LinkedList<Pair<String, String>>();
     private List<String> URLsToDownload = new LinkedList<String>();
     private Util SpiderLeg = new Util();
+    
+    
     
     Spider(int MAX_LEVEL_TO_EXPLORE, int MAX_SIZE_TO_DOWNLOAD, int MAX_NUM_DOCUMENTS, int SIZE_BUFFER_OF_DOCUMENTS) {
         this.MAX_LEVEL_TO_EXPLORE = MAX_LEVEL_TO_EXPLORE;
@@ -49,62 +50,66 @@ public class Spider {
     }
     
     public void search() throws InterruptedException, MalformedURLException{
-        String currentUrl;
         String currentPage;
-        System.out.println("Pages visited Size: " + this.pagesVisited.size());
-        System.out.println("Pages to visit not empty: " + !this.pagesToVisit.isEmpty());
-        System.out.println("MBDownloaded: " + MBDownloaded);
-        System.out.println("MAX_NUM_DOCUMENTS: " + MAX_NUM_DOCUMENTS);
-        System.out.println("MAX_SIZE_TO_DOWNLOAD: " + MAX_SIZE_TO_DOWNLOAD);
+        String currentUrl;
+        String currentType;
+        Pair<String, String> current;
      while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS) && 
              (!this.pagesToVisit.isEmpty()) && 
              (MBDownloaded < MAX_SIZE_TO_DOWNLOAD))
       {
           //Visitar la pag y guardar sus datos
-          currentUrl = this.pagesToVisit.remove(0); 
+          current = this.pagesToVisit.remove(0); 
           //Agregar reglas asociadas a la página
-          this.SpiderLeg.addRules(currentUrl);
-          currentPage = this.SpiderLeg.getPage(currentUrl);
-          pagesToDownload.add(currentPage);
-          URLsToDownload.add(currentUrl);
+          this.SpiderLeg.addRules(current.u);
+          currentPage = this.SpiderLeg.getPage(current.u);
+          pagesToDownload.add(new Pair<String, String>(currentPage, current.t));
+          URLsToDownload.add(current.u);
          //**pagesToDownloadType.add(url type)
          //Si el buffer está lleno 
-          if(pagesToDownload.size() >= SIZE_BUFFER_OF_DOCUMENTS){
-              try {
-                  this.Downloadfiles();
-              } catch (IOException ex) {
-                  Logger.getLogger(Spider.class.getName()).log(Level.SEVERE, null, ex);
-              }
-              System.out.println(String.format("**Success** files downloaded"));
-          }        
-         this.pagesVisited.add(currentUrl);
-         //Extract the urls from the pag and added to the pageToVisit List 
-         ArrayList<String> arrayList = SpiderLeg.extractUrls(currentPage, currentUrl);
-         
-         if(!arrayList.isEmpty()){}
-         for (String url : arrayList) {
-             // if already visited
-             if (pagesVisited.contains(url)) {
-                 continue;
-             }
-             // if banned by robots.txt
-             if (!this.SpiderLeg.crawlable(url)){
-                 continue;
-             }
-             else {
-                 this.pagesToVisit.add(url);
-             }    
-         }
-         TimeUnit.SECONDS.sleep(1); 
-      }
-       
+            if (pagesToDownload.size() >= SIZE_BUFFER_OF_DOCUMENTS) {
+                System.out.println("Buffer over capacity");
+
+                try {
+                    System.out.println("Downloading Files");
+
+                    this.Downloadfiles();
+                } catch (IOException ex) {
+                    Logger.getLogger(Spider.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println(String.format("**Success** files downloaded"));
+            }
+            this.pagesVisited.add(current.u);
+            //Extract the urls from the pag and added to the pageToVisit List 
+            ArrayList<Pair<String, String>> arrayList = SpiderLeg.extractUrls(currentPage, current.u);
+            if (!arrayList.isEmpty()) {
+            }
+            for (Pair<String, String> url : arrayList) {
+                // if already visited
+                if (pagesVisited.contains(url.u)) {
+
+                    continue;
+                }
+                // if banned by robots.txt
+                if (!this.SpiderLeg.crawlable(url.u)) {
+
+                    continue;
+                } else {
+
+                    this.pagesToVisit.add(url);
+                }
+            }
+            TimeUnit.SECONDS.sleep(1);
+
+        }
+
     }
     
     public void Downloadfiles() throws IOException{
         int ArraysSize = pagesToDownload.size();
         int bytesCount = 0;
         for(int i=0;i < ArraysSize -1;i++){
-            bytesCount += SpiderLeg.downloadfile(URLsToDownload.remove(0), pagesToDownload.remove(0),pagesToDownloadType.remove(0));
+            bytesCount += SpiderLeg.downloadfile(URLsToDownload.remove(0), pagesToDownload.remove(0));
         }
         numOfDocuments += ArraysSize;
         MBDownloaded += bytesCount;
@@ -129,7 +134,7 @@ public class Spider {
                   String line;
                   while ((line = reader.readLine()) != null)
                   {
-                    pagesToVisit.add(line);
+                    pagesToVisit.add(new Pair<String, String>(line, ".html"));
                   }
                   reader.close();
 
