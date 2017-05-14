@@ -55,8 +55,7 @@ public class Spider {
         String currentType;
         Pair<String, String> current;
      while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS) && 
-             (!this.pagesToVisit.isEmpty()) && 
-             (MBDownloaded < MAX_SIZE_TO_DOWNLOAD))
+             (!this.pagesToVisit.isEmpty()))
       {
           //Visitar la pag y guardar sus datos
           current = this.pagesToVisit.remove(0); 

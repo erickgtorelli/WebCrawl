@@ -7,11 +7,15 @@ package crawler;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,7 +46,14 @@ public class Util {
     private int fileCount = 0;
     private HashMap<String, ArrayList<String>> disallowed = new HashMap<String, ArrayList<String>>();
     private HashMap<String, ArrayList<String>> allowed = new HashMap<String, ArrayList<String>>();
+    private FileOutputStream fUrls;
+    BufferedWriter out = null;
 
+    public Util() {
+        
+        
+		
+    }
     /**
      * Download file from URL
      *
@@ -54,7 +65,11 @@ public class Util {
     public int downloadfile(String fileUrl, Pair<String, String> pair) throws IOException {
         URL url = new URL(fileUrl);
         System.out.println("Downloading - " + fileUrl);
-        String filename = "\\Files\\" + fileCount + pair.t;
+       
+        FileWriter fstream = new FileWriter("UrlsVisited.txt", true); //true tells to append data.
+        out = new BufferedWriter(fstream);
+        out.write(fileUrl + "\n");
+        String filename = "Files/" + fileCount;
         File file;
         file = new File(filename);
         file.createNewFile();
@@ -68,9 +83,11 @@ public class Util {
             fis.write(buffer, 0, count);
             bytesCount += 1024;
         }
+        
         //* save URL on url.txt history
         fis.close();
         bis.close();
+        out.close();
 
         return bytesCount;
     }
