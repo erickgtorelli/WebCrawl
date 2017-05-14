@@ -49,7 +49,7 @@ public class Spider {
         this.SIZE_BUFFER_OF_DOCUMENTS = SIZE_BUFFER_OF_DOCUMENTS;
     }
     
-    public void search() throws InterruptedException, MalformedURLException{
+    public void search() throws InterruptedException, MalformedURLException, IOException{
         String currentPage;
         String currentUrl;
         String currentType;
@@ -62,6 +62,7 @@ public class Spider {
           //Agregar reglas asociadas a la página
           this.SpiderLeg.addRules(current.u);
           currentPage = this.SpiderLeg.getPage(current.u);
+          System.out.println("Current is " + current.u);
           pagesToDownload.add(new Pair<String, String>(currentPage, current.t));
           URLsToDownload.add(current.u);
          //**pagesToDownloadType.add(url type)
@@ -90,15 +91,23 @@ public class Spider {
                     continue;
                 }
                 // if banned by robots.txt
-                if (!this.SpiderLeg.crawlable(url.u)) {
+                else if (!this.SpiderLeg.crawlable(url.u)) {
 
+                    continue;
+                } 
+                // if the page exists (status code 200 OK)
+                else if (!SpiderLeg.isOK(url.u)) {
+                    
                     continue;
                 } else {
 
                     this.pagesToVisit.add(url);
                 }
             }
+            System.out.println("Pages visited: " + pagesVisited.size() + " of " + MAX_NUM_DOCUMENTS);
+            System.out.println("Size is: " + pagesToDownload.size());
             TimeUnit.SECONDS.sleep(1);
+            
 
         }
 
@@ -133,7 +142,7 @@ public class Spider {
                   String line;
                   while ((line = reader.readLine()) != null)
                   {
-                    pagesToVisit.add(new Pair<String, String>(line, ".html"));
+                    pagesToVisit.add(new Pair<String, String>(line, SpiderLeg.getContentType(line)));
                   }
                   reader.close();
 

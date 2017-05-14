@@ -5,6 +5,7 @@
  */
 package crawler;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,27 +26,30 @@ public class Main {
       int MAX_NUM_DOCUMENTS = 10000;
       int SIZE_BUFFER_OF_DOCUMENTS = 10;
       Spider spider;
-      System.out.print("Main");
-      /*
+      System.out.print("Main\n");
         for(int i = 0; i < args.length; i++) {
             switch(i){
-                case 1: MAX_LEVEL_TO_EXPLORE = Integer.parseInt(args[i]);
+                case 0: MAX_LEVEL_TO_EXPLORE = Integer.parseInt(args[i]);
                     break;
-                case 2: MAX_SIZE_TO_DOWNLOAD = Integer.parseInt(args[i]);
+                case 1: MAX_SIZE_TO_DOWNLOAD = Integer.parseInt(args[i]);
                     break;
-                case 3: MAX_NUM_DOCUMENTS = Integer.parseInt(args[i]);
+                case 2: MAX_NUM_DOCUMENTS = Integer.parseInt(args[i]);
                     break;
-                case 4: SIZE_BUFFER_OF_DOCUMENTS = Integer.parseInt(args[i]);
+                case 3: SIZE_BUFFER_OF_DOCUMENTS = Integer.parseInt(args[i]);
                     break;
             }
         }
-       */
         spider = new Spider(MAX_LEVEL_TO_EXPLORE,MAX_SIZE_TO_DOWNLOAD,MAX_NUM_DOCUMENTS,SIZE_BUFFER_OF_DOCUMENTS);
         spider.loadFile("urlsToVisit.txt");
         try {
             spider.search();
         } catch (InterruptedException | MalformedURLException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+          //  Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.toString());
+        } catch (IOException ex) {
+          //  Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.toString());
+
         }
     }  
 }

@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,8 +70,8 @@ public class Util {
        
         FileWriter fstream = new FileWriter("UrlsVisited.txt", true); //true tells to append data.
         out = new BufferedWriter(fstream);
-        out.write(fileUrl + "\n");
-        String filename = "Files/" + fileCount;
+        out.write(fileUrl + " " + getContentType(fileUrl) + "\r\n");
+        String filename = "Files"+ java.io.File.separator + fileCount;
         File file;
         file = new File(filename);
         file.createNewFile();
@@ -93,6 +95,7 @@ public class Util {
     }
 
     public String getPage(String url) {
+        System.out.println("    + Getting: " + url);
         URL pagina;
         InputStream is = null;
         BufferedReader br;
@@ -123,7 +126,7 @@ public class Util {
     /*
     Recibe el texto de la pagina en string y el url base para llegarle a las direcciones locales
      */
-    public ArrayList<Pair<String, String>> extractUrls(String pageText, String baseUrl) {
+    public ArrayList<Pair<String, String>> extractUrls(String pageText, String baseUrl) throws IOException {
         ArrayList<Pair<String, String>> urls = new ArrayList<Pair<String, String>>();
         Pattern filePattern = Pattern.compile("(href=\\s?\")((([A-Za-z]{3,9}:)?(?:\\/\\/))?([\\d\\w\\.\\-&^%$]*[\\d\\w\\-\\/&^%$]*)(\\.txt|\\.rtf|\\.doc|\\.docx|\\.xhtml|\\.pdf|\\.odt|\\.html|\\.htm)?)\"");
         Matcher matcher = filePattern.matcher(pageText);
@@ -253,6 +256,40 @@ public class Util {
             }
         }
         return crawlable;
+    }
+    
+    
+    public String getContentType(String address) throws MalformedURLException{
+        URL url = new URL(address);
+        try {
+            HttpURLConnection connection = (HttpURLConnection)  url.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.connect();
+            String contentType = connection.getContentType();
+            connection.disconnect();
+            return contentType;
+        } catch (IOException ex) {
+            System.out.println("Error getting content type: " + ex.toString());
+        }
+        return null;
+    }
+    
+    
+    
+    public boolean isOK(String address) throws MalformedURLException{
+        URL url = new URL(address);
+        int status = 0;
+        try {
+            HttpURLConnection connection = (HttpURLConnection)  url.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.connect();
+            status = connection.getResponseCode();
+            connection.disconnect();
+        } catch (IOException ex) {
+            System.out.println("Error checking if OK: " + ex.toString());
+        }
+        return (status == 200);
+        
     }
 
 }
