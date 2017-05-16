@@ -88,7 +88,7 @@ public class Spider {
             }
             this.pagesVisited.add(current.u);
             //Extract the urls from the pag and added to the pageToVisit List 
-            ArrayList<Pair<String, String>> arrayList = SpiderLeg.extractUrls(currentPage, current.u);
+            ArrayList<Pair<String, String>> arrayList = SpiderLeg.extractUrls(currentPage, SpiderLeg.getBase(current.u));
 
             if (!arrayList.isEmpty()) {
             }

@@ -292,5 +292,11 @@ public class Util {
         return (status == 200);
         
     }
+    
+    
+    public String getBase(String url) throws MalformedURLException{
+        URL base = new URL(url);
+        return base.getProtocol().toString() + "://" + base.getHost().toString();
+    }
 
 }
