@@ -288,6 +288,7 @@ public class Util {
         } catch (IOException ex) {
             System.out.println("Error checking if OK: " + ex.toString());
         }
+
         return (status == 200);
         
     }

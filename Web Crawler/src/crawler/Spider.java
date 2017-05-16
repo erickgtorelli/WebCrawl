@@ -55,18 +55,24 @@ public class Spider {
         String currentType;
         Pair<String, String> current;
      while((this.pagesVisited.size() < MAX_NUM_DOCUMENTS) && 
-             (!this.pagesToVisit.isEmpty()))
+             (!this.pagesToVisit.isEmpty()) && (MBDownloaded < MAX_SIZE_TO_DOWNLOAD))
       {
           //Visitar la pag y guardar sus datos
           current = this.pagesToVisit.remove(0); 
           //Agregar reglas asociadas a la página
           this.SpiderLeg.addRules(current.u);
           currentPage = this.SpiderLeg.getPage(current.u);
+          if (!SpiderLeg.isOK(current.u)){
+              continue;
+          }
           System.out.println("Current is " + current.u);
           pagesToDownload.add(new Pair<String, String>(currentPage, current.t));
           URLsToDownload.add(current.u);
          //**pagesToDownloadType.add(url type)
          //Si el buffer está lleno 
+         System.out.println("Buffer is " + pagesToDownload.size() + " of " + SIZE_BUFFER_OF_DOCUMENTS);
+         System.out.println("Download is at " + MBDownloaded+ " of " + MAX_SIZE_TO_DOWNLOAD);
+
             if (pagesToDownload.size() >= SIZE_BUFFER_OF_DOCUMENTS) {
                 System.out.println("Buffer over capacity");
 
@@ -78,12 +84,15 @@ public class Spider {
                     Logger.getLogger(Spider.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println(String.format("**Success** files downloaded"));
+                System.out.println("Total number downloaded: " + numOfDocuments);
             }
             this.pagesVisited.add(current.u);
             //Extract the urls from the pag and added to the pageToVisit List 
             ArrayList<Pair<String, String>> arrayList = SpiderLeg.extractUrls(currentPage, current.u);
+
             if (!arrayList.isEmpty()) {
             }
+
             for (Pair<String, String> url : arrayList) {
                 // if already visited
                 if (pagesVisited.contains(url.u)) {
@@ -91,21 +100,15 @@ public class Spider {
                     continue;
                 }
                 // if banned by robots.txt
-                else if (!this.SpiderLeg.crawlable(url.u)) {
+                if (!this.SpiderLeg.crawlable(url.u)) {
 
                     continue;
                 } 
-                // if the page exists (status code 200 OK)
-                else if (!SpiderLeg.isOK(url.u)) {
-                    
-                    continue;
-                } else {
+                else {
 
                     this.pagesToVisit.add(url);
                 }
             }
-            System.out.println("Pages visited: " + pagesVisited.size() + " of " + MAX_NUM_DOCUMENTS);
-            System.out.println("Size is: " + pagesToDownload.size());
             TimeUnit.SECONDS.sleep(1);
             
 
